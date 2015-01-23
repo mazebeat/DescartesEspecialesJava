@@ -1,0 +1,7 @@
+#Parametros Configuracion Log
+#Ruta=C\:/Users/egormaze/Desktop/Trabajo/Movistar/Junio/OSI2014-22729_Not_SMS/Desarrollo
+Ruta=G\:/Emision_Fija/log
+Extencion=log
+PatronTiempoNombre=yyyyMMdd
+PatronTiempoRegistro=dd-MM-yyyy HH:mm:ss.SSS
+ConcatenarLog=true
