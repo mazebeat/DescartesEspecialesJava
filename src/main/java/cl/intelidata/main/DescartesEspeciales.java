@@ -38,14 +38,7 @@ public class DescartesEspeciales {
 	 */
 	public static void main(String[] args) throws Exception {
 		log = new LOG(DescartesEspeciales.class);
-		try {
-			args[0] = "C:\\Users\\Maze\\Google Drive\\Intelidata\\Gemini's\\488\\06\\OSI2014-22729_Not_SMS\\Test\\Input\\ELECTRONICOS_C200115_Muestras_1_100.dat";
-			args[1] = "C:\\Users\\Maze\\Google Drive\\Intelidata\\Gemini's\\488\\06\\OSI2014-22729_Not_SMS\\Test\\Output\\BolTelChile_C0004_07062014.dat.result";
-			args[2] = "C:\\Users\\Maze\\Google Drive\\Intelidata\\Gemini's\\488\\06\\OSI2014-22729_Not_SMS\\Test\\Input\\descartados.txt";
-			args[3] = "M";
-			args[4] = "C:\\Users\\Maze\\Google Drive\\Intelidata\\Gemini's\\488\\06\\OSI2014-22729_Not_SMS\\Test\\Input\\ENROLA_MOVIL_CIC_200115.SVD";
-			args[5] = "C:\\Users\\Maze\\Google Drive\\Intelidata\\Gemini's\\488\\06\\OSI2014-22729_Not_SMS\\Test\\Output\\NUEVA_COLUMNA_REPORTE_TRANSVERSAL.csv";
-			
+		try {			
 			if (args.length != 6) {
 				log.ERROR("Error en parametros ingresados.");
 				System.exit(1);
@@ -433,17 +426,17 @@ public class DescartesEspeciales {
 	 */
 	public static String getNameCode(String code) {
 		String name = "";
-		switch (code) {
-			case "23":
+		switch (Integer.parseInt(code)) {
+			case 23:
 				name = "FA";
 				break;
-			case "53":
+			case 53:
 				name = "AP";
 				break;
-			case "54":
+			case 54:
 				name = "BO";
 				break;
-			case "72":
+			case 72:
 				name = "NC";
 				break;
 		}
@@ -471,7 +464,7 @@ public class DescartesEspeciales {
 	}
 	
 	/**
-	 * Genera archivo de salida args[5] que se utilizará para modificar el archivo de reporte transversal
+	 * Genera archivo de salida args[5] que se utilizarÃ¡ para modificar el archivo de reporte transversal
 	 * 
 	 * @param file
 	 * @param data
