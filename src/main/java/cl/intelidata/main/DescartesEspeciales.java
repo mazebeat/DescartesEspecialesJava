@@ -1,33 +1,56 @@
 package cl.intelidata.main;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Enumeration;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import main.LOG;
 
 /**
  * App que descarta clientes para Fija y Movil
+ * 
+ * @author Maze
  */
 public class DescartesEspeciales {
 	private static Hashtable<String, String> descartes;
 	private static Hashtable<String, String> pordescartar;
-	private static LOG log;
-	private static DescartesEspeciales desc = new DescartesEspeciales();
-
+	private static Hashtable<String, String> rTransversal;
+	private static LOG                       log;
+	
+	/**
+	 * Main process
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception {
-		desc.log = new LOG(DescartesEspeciales.class);
+		log = new LOG(DescartesEspeciales.class);
 		try {
-			if (args.length != 5) {
+			args[0] = "C:\\Users\\Maze\\Google Drive\\Intelidata\\Gemini's\\488\\06\\OSI2014-22729_Not_SMS\\Test\\Input\\ELECTRONICOS_C200115_Muestras_1_100.dat";
+			args[1] = "C:\\Users\\Maze\\Google Drive\\Intelidata\\Gemini's\\488\\06\\OSI2014-22729_Not_SMS\\Test\\Output\\BolTelChile_C0004_07062014.dat.result";
+			args[2] = "C:\\Users\\Maze\\Google Drive\\Intelidata\\Gemini's\\488\\06\\OSI2014-22729_Not_SMS\\Test\\Input\\descartados.txt";
+			args[3] = "M";
+			args[4] = "C:\\Users\\Maze\\Google Drive\\Intelidata\\Gemini's\\488\\06\\OSI2014-22729_Not_SMS\\Test\\Input\\ENROLA_MOVIL_CIC_200115.SVD";
+			args[5] = "C:\\Users\\Maze\\Google Drive\\Intelidata\\Gemini's\\488\\06\\OSI2014-22729_Not_SMS\\Test\\Output\\NUEVA_COLUMNA_REPORTE_TRANSVERSAL.csv";
+			
+			if (args.length != 6) {
 				log.ERROR("Error en parametros ingresados.");
 				System.exit(1);
 			}
-			log.INFO("Inciando proceso.");
+			log.INFO("Iniciando proceso.");
 			valach(args);
 			descartes = llenaDescartes(args[2]);
 			if (descartes == null) {
@@ -50,6 +73,7 @@ public class DescartesEspeciales {
 					System.exit(1);
 				}
 				descartarM(args[0], args[1]);
+				csvWrite(args[5], getTestData(rTransversal), "|");
 			} else {
 				log.ERROR("Tipo de proceso " + args[3] + " no existe, ingrese F o M.");
 				System.exit(1);
@@ -59,12 +83,12 @@ public class DescartesEspeciales {
 			log.EXCEPCION(ex);
 		}
 	}
-
+	
 	/**
 	 * Valida los parametros de entrada.
 	 * 
-	 * @param parametros
-	 *            Array de String con todos los parametros de la consola
+	 * @param parametros String[] Todos los parametros de la consola
+	 * @throws Exception
 	 */
 	public static void valach(String[] parametros) throws Exception {
 		int error = 0;
@@ -91,19 +115,17 @@ public class DescartesEspeciales {
 			System.exit(error);
 		}
 	}
-
+	
 	/**
 	 * Descarta los Clientes Fija B y F.
 	 * 
-	 * @param Archin
-	 *            String con ruta del archivo de Entrada.
-	 * @param Archout
-	 *            String con ruta del Archivo de Salida.
+	 * @param Archin String con ruta del archivo de Entrada.
+	 * @param Archout String con ruta del Archivo de Salida.
 	 */
 	public static void descartarF(String Archin, String Archout) throws Exception {
-		File in=new File(Archin);
-		if(in.getName().toUpperCase().startsWith("NC")){
-			descartarFNC(Archin,Archout);
+		File in = new File(Archin);
+		if (in.getName().toUpperCase().startsWith("NC")) {
+			descartarFNC(Archin, Archout);
 			return;
 		}
 		long Qdescartes = 0;
@@ -116,49 +138,12 @@ public class DescartesEspeciales {
 			outputDescartes.delete();
 		}
 		outputDescartes.createNewFile();
-		// String RegistroCli="",Codcli="",Cuenta="";
 		String reg = "";
-		boolean write = false;
-		// while((reg=input.readLine())!=null){
-		// if(reg.startsWith("20100")){
-		// RegistroCli=reg+"\n";
-		// write=false;
-		// }
-		// else if(reg.startsWith("30100")){
-		// RegistroCli=RegistroCli+reg+"\n";
-		// Cuenta=reg.split("\\|")[4];
-		// if(pordescartar.containsKey(Codcli+"-"+Cuenta)){
-		// Qdescartes++;
-		// Escribe(outputDescartes,RegistroCli);
-		// write=true;
-		// RegistroCli="";
-		// }
-		// else{
-		// Escribe(output,RegistroCli);
-		// RegistroCli="";
-		// }
-		// }
-		// else{
-		// if(write){
-		// Escribe(outputDescartes,reg+"\n");
-		// }
-		// else{
-		// if(!RegistroCli.equals("")){
-		// RegistroCli=RegistroCli+reg+"\n";
-		// }
-		// else{
-		// Escribe(output,reg+"\n");
-		// }
-		// }
-		// }
-		// }
 		FileString RegistroCli = new FileString(Qcli);
 		String Codcli = "", Cuenta = "";
 		while ((reg = input.readLine()) != null) {
 			if (reg.startsWith("20100")) {
 				Qcli++;
-				Codcli = reg.split("\\|")[3];
-				// Codcli=getCorrigeCliente(reg.substring(25,35));
 				if (RegistroCli.isWriten()) {
 					if (pordescartar.containsKey(Codcli + "-" + Cuenta)) {
 						log.INFO("Descartado: " + Codcli + "-" + Cuenta);
@@ -173,6 +158,7 @@ public class DescartesEspeciales {
 					RegistroCli.deleteFile();
 					RegistroCli = new FileString(Qcli);
 				}
+				Codcli = reg.split("\\|")[3];
 			} else if (reg.startsWith("30100")) {
 				Cuenta = getCorrigeCliente(reg.split("\\|")[4]);
 			}
@@ -193,13 +179,12 @@ public class DescartesEspeciales {
 		log.INFO("Se descartaron " + Qdescartes + " clientes del proceso.");
 		log.INFO("Proceso Terminado.");
 	}
+	
 	/**
 	 * Descarta los Clientes Fija NC.
 	 * 
-	 * @param Archin
-	 *            String con ruta del archivo de Entrada.
-	 * @param Archout
-	 *            String con ruta del Archivo de Salida.
+	 * @param Archin String con ruta del archivo de Entrada.
+	 * @param Archout String con ruta del Archivo de Salida.
 	 */
 	public static void descartarFNC(String Archin, String Archout) throws Exception {
 		long Qdescartes = 0;
@@ -213,7 +198,6 @@ public class DescartesEspeciales {
 		}
 		outputDescartes.createNewFile();
 		String reg = "";
-		boolean write = false;
 		FileString RegistroCli = new FileString(Qcli);
 		String Codcli = "", Cuenta = "";
 		while ((reg = input.readLine()) != null) {
@@ -248,18 +232,18 @@ public class DescartesEspeciales {
 			RegistroCli.closeFile();
 			RegistroCli.addTo(output);
 		}
-		RegistroCli.deleteFile();
+		// RegistroCli.deleteFile();
 		RegistroCli = new FileString(Qcli);
+		RegistroCli.deleteFile();
 		log.INFO("Se descartaron " + Qdescartes + " clientes del proceso.");
 		log.INFO("Proceso Terminado.");
 	}
+	
 	/**
 	 * Descarta los Clientes Movil.
 	 * 
-	 * @param Archin
-	 *            String con ruta del archivo de Entrada.
-	 * @param Archout
-	 *            String con ruta del Archivo de Salida.
+	 * @param Archin String con ruta del archivo de Entrada.
+	 * @param Archout String con ruta del Archivo de Salida.
 	 */
 	public static void descartarM(String Archin, String Archout) throws Exception {
 		long Qdescartes = 0;
@@ -272,51 +256,22 @@ public class DescartesEspeciales {
 			outputDescartes.delete();
 		}
 		outputDescartes.createNewFile();
-		// String RegistroCli="",Codcli="";
 		String reg = "";
-		boolean write = false;
-		// while((reg=input.readLine())!=null){
-		// if(reg.startsWith("A1000")){
-		// RegistroCli=reg+"\n";
-		// write=false;
-		// }
-		// else if(reg.startsWith("A1300")){
-		// RegistroCli=RegistroCli+reg+"\n";
-		// Codcli=getCorrigeCliente(reg.substring(25,35));
-		// if(pordescartar.containsKey(Codcli)){
-		// Qdescartes++;
-		// Escribe(outputDescartes,RegistroCli);
-		// write=true;
-		// RegistroCli="";
-		// }
-		// else{
-		// Escribe(output,RegistroCli);
-		// RegistroCli="";
-		// }
-		// }
-		// else{
-		// if(write){
-		// Escribe(outputDescartes,reg+"\n");
-		// }
-		// else{
-		// if(!RegistroCli.equals("")){
-		// RegistroCli=RegistroCli+reg+"\n";
-		// }
-		// else{
-		// Escribe(output,reg+"\n");
-		// }
-		// }
-		// }
-		// }
 		FileString RegistroCli = new FileString(Qcli);
 		String Codcli = "";
+		rTransversal = new Hashtable<String, String>();
+		rTransversal.put("FA", "0");
+		rTransversal.put("BO", "0");
+		rTransversal.put("AP", "0");
 		while ((reg = input.readLine()) != null) {
 			if (reg.startsWith("A1000")) {
+				String codigo = reg.split(" ")[1];
 				Qcli++;
 				if (RegistroCli.isWriten()) {
 					if (pordescartar.containsKey(Codcli)) {
 						log.INFO("Descartado: " + Codcli);
 						Qdescartes++;
+						setReporteTransversal(codigo, Long.toString(Qdescartes));
 						RegistroCli.closeFile();
 						RegistroCli.addTo(outputDescartes);
 					} else {
@@ -347,13 +302,11 @@ public class DescartesEspeciales {
 		log.INFO("Se descartaron " + Qdescartes + " clientes del proceso.");
 		log.INFO("Proceso Terminado.");
 	}
-
+	
 	/**
-	 * Obtiene las cuentas de los clientes del archivo de enrolamiento que
-	 * tengan correos del archivo de descarte (Fijo).
+	 * Obtiene las cuentas de los clientes del archivo de enrolamiento que tengan correos del archivo de descarte (Fijo).
 	 * 
-	 * @param Archin
-	 *            String con ruta del archivo de Entrada.
+	 * @param Archin String con ruta del archivo de Entrada.
 	 * @return Hash con valores si se encuentran clientes, o Hash null.
 	 */
 	public static Hashtable<String, String> buscarDescartesF(String Archin) throws Exception {
@@ -363,9 +316,9 @@ public class DescartesEspeciales {
 		int contadescartes = 0;
 		while ((linea = leer.readLine()) != null) {
 			String[] data = new String[3];
-			data[0] = linea.substring(0, 9);
-			data[1] = linea.substring(10, 18);
-			data[2] = linea.substring(18, linea.length() - 1);
+			data[0] = linea.substring(0, 9).trim();
+			data[1] = linea.substring(9, 18).trim();
+			data[2] = linea.substring(18, linea.length() - 1).trim();
 			if (descartes.containsKey(data[2].trim())) {
 				if (!salida.containsKey(data[0] + "-" + data[1])) {
 					salida.put(data[0] + "-" + data[1], "");
@@ -382,13 +335,11 @@ public class DescartesEspeciales {
 		}
 		return salida;
 	}
-
+	
 	/**
-	 * Obtiene las cuentas de los clientes del archivo de enrolamiento que
-	 * tengan correos del archivo de descarte (Movil).
+	 * Obtiene las cuentas de los clientes del archivo de enrolamiento que tengan correos del archivo de descarte (Movil).
 	 * 
-	 * @param Archin
-	 *            String con ruta del archivo de Entrada.
+	 * @param Archin String con ruta del archivo de Entrada.
 	 * @return Hash con valores si se encuentran clientes, o Hash null.
 	 */
 	public static Hashtable<String, String> buscarDescartesM(String Archin) throws Exception {
@@ -414,12 +365,11 @@ public class DescartesEspeciales {
 		}
 		return salida;
 	}
-
+	
 	/**
 	 * Obtiene los correos del archivo de descartes.
 	 * 
-	 * @param Archin
-	 *            String con ruta del archivo de Entrada.
+	 * @param Archin String con ruta del archivo de Entrada.
 	 * @return Hash con valores si se encuentran clientes, o Hash null.
 	 */
 	public static Hashtable<String, String> llenaDescartes(String Archin) throws Exception {
@@ -437,24 +387,22 @@ public class DescartesEspeciales {
 		log.INFO("Terminado, lista ok.");
 		return salida;
 	}
-
+	
 	/**
 	 * Instancia un BufferedReader con codificacion "ISO-8859-1".
 	 * 
-	 * @param File
-	 *            Ruta del archivo de Entrada.
+	 * @param File Ruta del archivo de Entrada.
 	 * @return BufferedReader del archivo Archin.
 	 */
 	public static BufferedReader getBufferedReader(String File) throws Exception {
 		BufferedReader br = new BufferedReader(new InputStreamReader(new FileInputStream(File), "ISO-8859-1"));
 		return br;
 	}
-
+	
 	/**
 	 * Corrige el codigo cliente eliminando los 0 a la izquierda.
 	 * 
-	 * @param cliente
-	 *            String con codigo cliente.
+	 * @param cliente String con codigo cliente.
 	 * @return String con codigo cliente corregido.
 	 */
 	public static String getCorrigeCliente(String cliente) {
@@ -462,8 +410,93 @@ public class DescartesEspeciales {
 		try {
 			cod = Integer.parseInt(cliente);
 			return String.valueOf(cod);
-		} catch (Exception ex) {
-		}
+		} catch (Exception ex) {}
 		return cliente.trim();
 	}
+	
+	/**
+	 * Setea valores del hashtable correspondiente a la nueva columna que se debe agregar al reporte transversal Gemini 558 / OSI-23272
+	 * 
+	 * @param key
+	 * @param value
+	 */
+	public static void setReporteTransversal(String key, String value) {
+		String name = getNameCode(key);
+		rTransversal.put(name, value);
+	}
+	
+	/**
+	 * Hace el match entre el codigo recibido del archivo de movil al nombre correspondiente al reporte transversal
+	 * 
+	 * @param code
+	 * @return
+	 */
+	public static String getNameCode(String code) {
+		String name = "";
+		switch (code) {
+			case "23":
+				name = "FA";
+				break;
+			case "53":
+				name = "AP";
+				break;
+			case "54":
+				name = "BO";
+				break;
+			case "72":
+				name = "NC";
+				break;
+		}
+		
+		return name;
+	}
+	
+	/**
+	 * Convierte y genera data necesaria para crear archivo csv de salida
+	 * 
+	 * @param Hashtable <String, String> hashtable
+	 * @return ArrayList<String[]>
+	 */
+	public static ArrayList<String[]> getTestData(Hashtable<String, String> hashtable) {
+		List<String[]> data = new ArrayList<String[]>();
+		int total = 0;
+		
+		data.add(new String[] { "CONCEPTO", "TOTAL DESCARTADOS" });
+		for (String key : hashtable.keySet()) {
+			total = total + Integer.parseInt(hashtable.get(key));
+			data.add(new String[] { key, hashtable.get(key) });
+		}
+		data.add(new String[] { "TOTAL", Integer.toString(total) });
+		return (ArrayList<String[]>) data;
+	}
+	
+	/**
+	 * Genera archivo de salida args[5] que se utilizará para modificar el archivo de reporte transversal
+	 * 
+	 * @param file
+	 * @param data
+	 * @param delimiter
+	 * @throws UnsupportedEncodingException
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public static void csvWrite(String file, ArrayList<String[]> data, String delimiter) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+		
+		OutputStream fout = new FileOutputStream(file);
+		OutputStreamWriter out = new OutputStreamWriter(fout, "UTF8");
+		
+		for (int i = 0; i < data.size(); i++) {
+			
+			String[] fila = data.get(i);
+			
+			for (int j = 0; j < fila.length; j++) {
+				out.write(fila[j] + delimiter);
+			}
+			
+			out.write("\n");
+		}
+		out.close();
+		fout.close();
+	}
+	
 }
