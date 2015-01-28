@@ -12,17 +12,15 @@ import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
 
 import main.LOG;
 
 /**
  * App que descarta clientes para Fija y Movil
  * 
- * @author Maze
+ * @author EGORMAZ
+ * @author DPINTO
  */
 public class DescartesEspeciales {
 	private static Hashtable<String, String> descartes;
@@ -38,8 +36,8 @@ public class DescartesEspeciales {
 	 */
 	public static void main(String[] args) throws Exception {
 		log = new LOG(DescartesEspeciales.class);
-		try {			
-			if (args.length != 6) {
+		try {
+ 			if (args.length != 6) {
 				log.ERROR("Error en parametros ingresados.");
 				System.exit(1);
 			}
@@ -66,7 +64,9 @@ public class DescartesEspeciales {
 					System.exit(1);
 				}
 				descartarM(args[0], args[1]);
-				csvWrite(args[5], getTestData(rTransversal), "|");
+				log.INFO("Generando archivo csv para cruce para Reporte transversal");
+				ArrayList<String[]> csv = getCsvData(rTransversal);
+				csvWrite(args[5], csv, '|');
 			} else {
 				log.ERROR("Tipo de proceso " + args[3] + " no existe, ingrese F o M.");
 				System.exit(1);
@@ -450,7 +450,7 @@ public class DescartesEspeciales {
 	 * @param Hashtable <String, String> hashtable
 	 * @return ArrayList<String[]>
 	 */
-	public static ArrayList<String[]> getTestData(Hashtable<String, String> hashtable) {
+	public static ArrayList<String[]> getCsvData(Hashtable<String, String> hashtable) {
 		List<String[]> data = new ArrayList<String[]>();
 		int total = 0;
 		
@@ -473,7 +473,7 @@ public class DescartesEspeciales {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void csvWrite(String file, ArrayList<String[]> data, String delimiter) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+	public static void csvWrite(String file, ArrayList<String[]> data, char delimiter) throws UnsupportedEncodingException, FileNotFoundException, IOException {
 		
 		OutputStream fout = new FileOutputStream(file);
 		OutputStreamWriter out = new OutputStreamWriter(fout, "UTF8");
